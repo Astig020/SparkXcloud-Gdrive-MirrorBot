@@ -25,7 +25,7 @@ from bot.helper.telegram_helper.filters import CustomFilters
 from bot.helper.telegram_helper.message_utils import sendMessage
 
 search_lock = asyncio.Lock()
-search_info = {False: dict(), True: dict()}
+search_info = {False: {}, True: {}}
 
 async def return_search(query, page=1, sukebei=False):
     page -= 1
@@ -70,7 +70,7 @@ async def return_search(query, page=1, sukebei=False):
         except IndexError:
             return '', len(results), ttl
 
-message_info = dict()
+message_info = {}
 ignore = set()
 
 @app.on_message(filters.command(['nyaasi', f'nyaasi@{bot.username}']))
@@ -335,5 +335,5 @@ def searchhelp(update, context):
     sendMessage(help_string, context.bot, update)
     
     
-SEARCHHELP_HANDLER = CommandHandler(BotCommands.TsHelpCommand, searchhelp, filters=(CustomFilters.authorized_chat | CustomFilters.authorized_user) & CustomFilters.mirror_owner_filter, run_async=True)
+SEARCHHELP_HANDLER = CommandHandler(BotCommands.TsHelpCommand, searchhelp, filters=(CustomFilters.authorized_chat | CustomFilters.authorized_user), run_async=True)
 dispatcher.add_handler(SEARCHHELP_HANDLER)

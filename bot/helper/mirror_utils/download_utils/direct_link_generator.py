@@ -8,6 +8,8 @@ from https://github.com/AvinashReddy3108/PaperplaneExtended . I hereby take no c
 than the modifications. See https://github.com/AvinashReddy3108/PaperplaneExtended/commits/master/userbot/modules/direct_links.py
 for original authorship. """
 
+from requests import get as rget, head as rhead, post as rpost, Session as rsession
+from re import findall as re_findall, sub as re_sub, match as re_match, search as re_search
 from bot import LOGGER, UPTOBOX_TOKEN
 import json
 import math
@@ -31,9 +33,9 @@ def direct_link_generator(link: str):
     """ direct links generator """
     if not link:
         raise DirectDownloadLinkException("No links found!")
-    elif 'youtube.com' in link or 'youtu.be' in link:
+    if 'youtube.com' in link or 'youtu.be' in link:
         raise DirectDownloadLinkException(f"Use /{BotCommands.WatchCommand} to mirror Youtube link\nUse /{BotCommands.TarWatchCommand} to make tar of Youtube playlist")
-    elif 'zippyshare.com' in link:
+    if 'zippyshare.com' in link:
         return zippy_share(link)
     elif 'yadi.sk' in link:
         return yandex_disk(link)
@@ -45,6 +47,8 @@ def direct_link_generator(link: str):
         return osdn(link)
     elif 'github.com' in link:
         return github(link)
+    elif "mdisk" in link:
+        return mdisk(link)
     elif 'hxfile.co' in link:
         return hxfile(link)
     elif 'anonfiles.com' in link:
@@ -358,8 +362,7 @@ def fichier(link: str) -> str:
       dl_url = soup.find("a", {"class": "ok btn-general btn-orange"})["href"]
       if dl_url is None:
         raise DirectDownloadLinkException("ERROR: Unable to generate Direct Link 1fichier!")
-      else:
-        return dl_url
+      return dl_url
     else:
       if len(soup.find_all("div", {"class": "ct_warn"})) == 2:
         str_2 = soup.find_all("div", {"class": "ct_warn"})[-1]
@@ -367,8 +370,7 @@ def fichier(link: str) -> str:
           numbers = [int(word) for word in str(str_2).split() if word.isdigit()]
           if len(numbers) == 0:
             raise DirectDownloadLinkException("ERROR: 1fichier is on a limit. Please wait a few minutes/hour.")
-          else:
-            raise DirectDownloadLinkException(f"ERROR: 1fichier is on a limit. Please wait {numbers[0]} minute.")
+          raise DirectDownloadLinkException(f"ERROR: 1fichier is on a limit. Please wait {numbers[0]} minute.")
         elif "protect access" in str(str_2).lower():
           raise DirectDownloadLinkException("ERROR: This link requires a password!\n\n<b>This link requires a password!</b>\n- Insert sign <b>::</b> after the link and write the password after the sign.\n\n<b>Example:</b>\n<code>/mirror https://1fichier.com/?smmtd8twfpm66awbqz04::love you</code>\n\n* No spaces between the signs <b>::</b>\n* For the password, you can use a space!")
         else:
@@ -380,14 +382,39 @@ def fichier(link: str) -> str:
           numbers = [int(word) for word in str(str_1).split() if word.isdigit()]
           if len(numbers) == 0:
             raise DirectDownloadLinkException("ERROR: 1fichier is on a limit. Please wait a few minutes/hour.")
-          else:
-            raise DirectDownloadLinkException(f"ERROR: 1fichier is on a limit. Please wait {numbers[0]} minute.")
+          raise DirectDownloadLinkException(f"ERROR: 1fichier is on a limit. Please wait {numbers[0]} minute.")
         elif "bad password" in str(str_3).lower():
           raise DirectDownloadLinkException("ERROR: The password you entered is wrong!")
         else:
           raise DirectDownloadLinkException("ERROR: Error trying to generate Direct Link from 1fichier!")
       else:
         raise DirectDownloadLinkException("ERROR: Error trying to generate Direct Link from 1fichier!")
+    
+def mdis_k(urlx):
+    scraper = create_scraper(interpreter="nodejs", allow_brotli=False)
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/36.0.1985.125 Safari/537.36"
+    }
+    apix = f"http://x.egraph.workers.dev/?param={urlx}"
+    try:
+        response = scraper.get(apix, headers=headers)
+        query = response.json()
+    except:
+        raise DirectDownloadLinkException("ERROR: Error while trying to generate Direct Link from MDisk!")
+    return query
+
+def mdisk(url: str) -> str:
+    """MDisk DDL link generator
+    By https://github.com/missemily2022"""
+
+    try:
+        fxl = url.split("/")
+        urlx = fxl[-1]
+        uhh = mdis_k(urlx)
+        text = uhh["download"]
+        return text
+    except:
+        raise DirectDownloadLinkException("ERROR: Error while trying to generate Direct Link from MDisk!")    
 
 
 def solidfiles(url: str) -> str:

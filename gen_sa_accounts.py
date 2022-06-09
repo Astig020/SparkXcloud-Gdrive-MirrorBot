@@ -63,7 +63,6 @@ def _def_batch_resp(id, resp, exception):
 
 # Project Creation Batch Handler
 def _pc_resp(id, resp, exception):
-    global project_create_ops
     if exception is not None:
         print(str(exception))
     else:
@@ -73,7 +72,6 @@ def _pc_resp(id, resp, exception):
 
 # Project Creation
 def _create_projects(cloud, count):
-    global project_create_ops
     batch = cloud.new_batch_http_request(callback=_pc_resp)
     new_projs = []
     for i in range(count):
@@ -170,11 +168,13 @@ def serviceaccountfactory(
         create_projects=None,
         max_projects=12,
         enable_services=None,
-        services=['iam', 'drive'],
+        services=None,
         create_sas=None,
         delete_sas=None,
         download_keys=None
 ):
+    if services is None:
+        services = ['iam', 'drive']
     selected_projects = []
     proj_id = loads(open(credentials, 'r').read())['installed']['project_id']
     creds = None
@@ -307,7 +307,7 @@ if __name__ == '__main__':
               'https://developers.google.com/drive/api/v3/quickstart/python\n'
               'and save the json file as credentials.json' % args.credentials)
         if len(options) < 1:
-            exit(-1)
+            sys.exit(-1)
         else:
             i = 0
             print('Select a credentials file below.')

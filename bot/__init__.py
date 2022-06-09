@@ -1,5 +1,6 @@
 import logging
 import os
+import sys
 import threading
 import time
 import random
@@ -51,12 +52,12 @@ def mktable():
         LOGGER.info("Table Created!")
     except Error as e:
         LOGGER.error(e)
-        exit(1)
+        sys.exit(1)
 
 try:
     if bool(getConfig('_____REMOVE_THIS_LINE_____')):
         logging.error('The README.md file there to be read! Exiting now!')
-        exit()
+        sys.exit()
 except KeyError:
     pass
 
@@ -133,7 +134,7 @@ try:
     UPSTREAM_BRANCH = getConfig('UPSTREAM_BRANCH')
 except KeyError as e:
     LOGGER.error("One or more env variables missing! Exiting now")
-    exit(1)
+    sys.exit(1)
 try:
     DB_URI = getConfig('DATABASE_URL')
     if len(DB_URI) == 0:
@@ -157,7 +158,7 @@ if DB_URI is not None:
             mktable()
         else:
             LOGGER.error(e)
-            exit(1)
+            sys.exit(1)
     finally:
         cur.close()
         conn.close()
@@ -176,8 +177,7 @@ try:
     STATUS_LIMIT = getConfig('STATUS_LIMIT')
     if len(STATUS_LIMIT) == 0:
         raise KeyError
-    else:
-        STATUS_LIMIT = int(getConfig('STATUS_LIMIT'))
+    STATUS_LIMIT = int(getConfig('STATUS_LIMIT'))
 except KeyError:
     STATUS_LIMIT = None
 try:
@@ -188,7 +188,7 @@ except KeyError:
 try:
     MEGA_EMAIL_ID = getConfig('MEGA_EMAIL_ID')
     MEGA_PASSWORD = getConfig('MEGA_PASSWORD')
-    if len(MEGA_EMAIL_ID) == 0 or len(MEGA_PASSWORD) == 0:
+    if 0 in (len(MEGA_EMAIL_ID), len(MEGA_PASSWORD)):
         raise KeyError
 except KeyError:
     logging.warning('MEGA Credentials not provided!')
@@ -240,9 +240,16 @@ try:
 except KeyError:
     TAR_UNZIP_LIMIT = None
 try:
+    TORRENT_TIMEOUT = getConfig('TORRENT_TIMEOUT')
+    if len(TORRENT_TIMEOUT) == 0:
+        raise KeyError
+    TORRENT_TIMEOUT = int(TORRENT_TIMEOUT)
+except:
+    TORRENT_TIMEOUT = None
+try:        
     BUTTON_FOUR_NAME = getConfig('BUTTON_FOUR_NAME')
     BUTTON_FOUR_URL = getConfig('BUTTON_FOUR_URL')
-    if len(BUTTON_FOUR_NAME) == 0 or len(BUTTON_FOUR_URL) == 0:
+    if 0 in (len(BUTTON_FOUR_NAME), len(BUTTON_FOUR_URL)):
         raise KeyError
 except KeyError:
     BUTTON_FOUR_NAME = None
@@ -250,7 +257,7 @@ except KeyError:
 try:
     BUTTON_FIVE_NAME = getConfig('BUTTON_FIVE_NAME')
     BUTTON_FIVE_URL = getConfig('BUTTON_FIVE_URL')
-    if len(BUTTON_FIVE_NAME) == 0 or len(BUTTON_FIVE_URL) == 0:
+    if 0 in (len(BUTTON_FIVE_NAME), len(BUTTON_FIVE_URL)):
         raise KeyError
 except KeyError:
     BUTTON_FIVE_NAME = None
@@ -258,7 +265,7 @@ except KeyError:
 try:
     BUTTON_SIX_NAME = getConfig('BUTTON_SIX_NAME')
     BUTTON_SIX_URL = getConfig('BUTTON_SIX_URL')
-    if len(BUTTON_SIX_NAME) == 0 or len(BUTTON_SIX_URL) == 0:
+    if 0 in (len(BUTTON_SIX_NAME), len(BUTTON_SIX_URL)):
         raise KeyError
 except KeyError:
     BUTTON_SIX_NAME = None
@@ -271,56 +278,38 @@ except KeyError:
     IMAGE_URL = 'https://telegra.ph/file/7ac7fa23a5c3d2bbba654.jpg'    
 try:
     STOP_DUPLICATE = getConfig('STOP_DUPLICATE')
-    if STOP_DUPLICATE.lower() == 'true':
-        STOP_DUPLICATE = True
-    else:
-        STOP_DUPLICATE = False
+    STOP_DUPLICATE = STOP_DUPLICATE.lower() == 'true'
 except KeyError:
     STOP_DUPLICATE = False
 try:
     VIEW_LINK = getConfig('VIEW_LINK')
-    if VIEW_LINK.lower() == 'true':
-        VIEW_LINK = True
-    else:
-        VIEW_LINK = False
+    VIEW_LINK = VIEW_LINK.lower() == 'true'
 except KeyError:
     VIEW_LINK = False
 try:
     IS_TEAM_DRIVE = getConfig('IS_TEAM_DRIVE')
-    if IS_TEAM_DRIVE.lower() == 'true':
-        IS_TEAM_DRIVE = True
-    else:
-        IS_TEAM_DRIVE = False
+    IS_TEAM_DRIVE = IS_TEAM_DRIVE.lower() == 'true'
 except KeyError:
     IS_TEAM_DRIVE = False
 try:
     USE_SERVICE_ACCOUNTS = getConfig('USE_SERVICE_ACCOUNTS')
-    if USE_SERVICE_ACCOUNTS.lower() == 'true':
-        USE_SERVICE_ACCOUNTS = True
-    else:
-        USE_SERVICE_ACCOUNTS = False
+    USE_SERVICE_ACCOUNTS = USE_SERVICE_ACCOUNTS.lower() == 'true'
 except KeyError:
     USE_SERVICE_ACCOUNTS = False
 try:
     BLOCK_MEGA_FOLDER = getConfig('BLOCK_MEGA_FOLDER')
-    if BLOCK_MEGA_FOLDER.lower() == 'true':
-        BLOCK_MEGA_FOLDER = True
-    else:
-        BLOCK_MEGA_FOLDER = False
+    BLOCK_MEGA_FOLDER = BLOCK_MEGA_FOLDER.lower() == 'true'
 except KeyError:
     BLOCK_MEGA_FOLDER = False
 try:
     BLOCK_MEGA_LINKS = getConfig('BLOCK_MEGA_LINKS')
-    if BLOCK_MEGA_LINKS.lower() == 'true':
-        BLOCK_MEGA_LINKS = True
-    else:
-        BLOCK_MEGA_LINKS = False
+    BLOCK_MEGA_LINKS = BLOCK_MEGA_LINKS.lower() == 'true'
 except KeyError:
     BLOCK_MEGA_LINKS = False
 try:
     SHORTENER = getConfig('SHORTENER')
     SHORTENER_API = getConfig('SHORTENER_API')
-    if len(SHORTENER) == 0 or len(SHORTENER_API) == 0:
+    if 0 in (len(SHORTENER), len(SHORTENER_API)):
         raise KeyError
 except KeyError:
     SHORTENER = None
@@ -343,10 +332,7 @@ except KeyError:
 
 try:
     IS_VPS = getConfig('IS_VPS')
-    if IS_VPS.lower() == 'true':
-        IS_VPS = True
-    else:
-        IS_VPS = False
+    IS_VPS = IS_VPS.lower() == 'true'
 except KeyError:
     IS_VPS = False
 

@@ -10,6 +10,7 @@ import requests
 import logging
 import time
 from random import randrange
+from re import search as re_search
 
 from google.auth.transport.requests import Request
 from google.oauth2 import service_account
@@ -93,14 +94,11 @@ class GoogleDriveHelper:
 
     @staticmethod
     def getIdFromUrl(link: str):
-        if "folders" in link or "file" in link:
-            regex = r"https://drive\.google\.com/(drive)?/?u?/?\d?/?(mobile)?/?(file)?(folders)?/?d?/([-\w]+)[?+]?/?(w+)?"
-            res = re.search(regex,link)
-            if res is None:
-                raise IndexError("G-Drive ID not found.")
-            return res.group(5)
-        parsed = urlparse.urlparse(link)
-        return parse_qs(parsed.query)['id'][0]
+        regex = r"https:\/\/drive\.google\.com\/(?:open(.*?)id\=|drive(.*?)\/folders\/|file(.*?)?\/d\/|folderview(.*?)id\=|uc(.*?)id\=)([-\w]+)"
+        res = re_search(regex,link)
+        if res is None:
+            raise IndexError("G-Drive ID not found.")
+        return res.group(6)
 
     @retry(wait=wait_exponential(multiplier=2, min=3, max=6), stop=stop_after_attempt(5),
            retry=retry_if_exception_type(HttpError), before=before_log(LOGGER, logging.DEBUG))
@@ -212,7 +210,7 @@ class GoogleDriveHelper:
             except HttpError as err:
                 if err.resp.get('content-type', '').startswith('application/json'):
                     reason = json.loads(err.content).get('error').get('errors')[0].get('reason')
-                    if reason == 'userRateLimitExceeded' or reason == 'dailyLimitExceeded':
+                    if reason in ('userRateLimitExceeded', 'dailyLimitExceeded'):
                         if USE_SERVICE_ACCOUNTS:
                             self.switchServiceAccount()
                             LOGGER.info(f"Got: {reason}, Trying Again.")
@@ -312,14 +310,13 @@ class GoogleDriveHelper:
         except HttpError as err:
             if err.resp.get('content-type', '').startswith('application/json'):
                 reason = json.loads(err.content).get('error').get('errors')[0].get('reason')
-                if reason == 'userRateLimitExceeded' or reason == 'dailyLimitExceeded':
+                if reason in ('userRateLimitExceeded', 'dailyLimitExceeded'):
                     if USE_SERVICE_ACCOUNTS:
                         if self.sa_count == self.service_account_count:
                             self.is_cancelled = True
                             raise err
-                        else:
-                            self.switchServiceAccount()
-                            return self.copyFile(file_id,dest_id)
+                        self.switchServiceAccount()
+                        return self.copyFile(file_id,dest_id)
                     else:
                         self.is_cancelled = True
                         LOGGER.info(f"Got: {reason}")
@@ -564,7 +561,8 @@ class GoogleDriveHelper:
                                  html_content=content)
         return
 
-    def escapes(self, str):	
+    @staticmethod
+    def escapes(str):	
         chars = ['\\', "'", '"', r'\a', r'\b', r'\f', r'\n', r'\r', r'\t']	
         for char in chars:	
             str = str.replace(char, '\\'+char)	
@@ -821,6 +819,7 @@ class GoogleDriveHelper:
 
     def download_file(self, file_id, path, filename, mime_type):
         request = self.__service.files().get_media(fileId=file_id)
+        filename = filename.replace('/', '')
         fh = io.FileIO('{}{}'.format(path, filename), 'wb')
         downloader = MediaIoBaseDownload(fh, request, chunksize = 65 * 1024 * 1024)
         done = False
