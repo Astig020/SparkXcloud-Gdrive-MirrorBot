@@ -1,13 +1,14 @@
 config.env
 *auth_token.txt
 *.pyc
-downloads/*
-download/*
 data*
 .vscode
 .idea
 *.json
 *.pickle
-authorized_chats.txt
+.netrc
 log.txt
 accounts/*
+Thumbnails/*
+drive_folder
+cookies.txt

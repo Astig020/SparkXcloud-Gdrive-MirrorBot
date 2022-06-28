@@ -4,27 +4,31 @@ from bot import AUTHORIZED_CHATS, SUDO_USERS, OWNER_ID
 
 
 class CustomFilters:
-    class _OwnerFilter(MessageFilter):
-        def filter(self, message):
-            return bool(message.from_user.id == OWNER_ID)
+    class __OwnerFilter(MessageFilter):
+        def filter(self, message: Message):
+            return message.from_user.id == OWNER_ID
 
-    owner_filter = _OwnerFilter()
+    owner_filter = __OwnerFilter()
 
-    class _AuthorizedUserFilter(MessageFilter):
-        def filter(self, message):
-            id = message.from_user.id
-            return bool(id in AUTHORIZED_CHATS or id in SUDO_USERS or id == OWNER_ID)
+    class __AuthorizedUserFilter(MessageFilter):
+        def filter(self, message: Message):
+            uid = message.from_user.id
+            return uid in AUTHORIZED_CHATS or uid in SUDO_USERS or uid == OWNER_ID
 
-    authorized_user = _AuthorizedUserFilter()
+    authorized_user = __AuthorizedUserFilter()
 
-    class _AuthorizedChat(MessageFilter):
-        def filter(self, message):
-            return bool(message.chat.id in AUTHORIZED_CHATS)
+    class __AuthorizedChat(MessageFilter):
+        def filter(self, message: Message):
+            return message.chat.id in AUTHORIZED_CHATS
 
-    authorized_chat = _AuthorizedChat()
+    authorized_chat = __AuthorizedChat()
 
-    class _SudoUser(MessageFilter):
-        def filter(self,message):
-            return bool(message.from_user.id in SUDO_USERS)
+    class __SudoUser(MessageFilter):
+        def filter(self, message: Message):
+            return message.from_user.id in SUDO_USERS
 
-    sudo_user = _SudoUser()
+    sudo_user = __SudoUser()
+
+    @staticmethod
+    def _owner_query(user_id):
+        return user_id == OWNER_ID or user_id in SUDO_USERS
